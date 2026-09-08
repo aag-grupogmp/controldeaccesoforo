@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador QR - Power Automate</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <style>
+        /* Ajustes para el contenedor de la cámara para que parezca nativo */
+        #reader {
+            border: none !important;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: #111827; /* bg-gray-900 */
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        #reader video {
+            object-fit: cover;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        /* Ocultar elementos feos por defecto de la librería */
+        #reader__dashboard_section_csr span, 
+        #reader__dashboard_section_swaplink {
+            display: none !important;
+        }
+        #reader button {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        #reader button:hover {
+            background-color: #2563eb;
+        }
+        
+        /* Animaciones para transiciones de pantalla */
+        .fade-in { animation: fadeIn 0.3s ease-in forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body id="app-body" class="bg-gray-100 flex flex-col min-h-screen transition-colors duration-500 ease-in-out font-sans text-gray-800 antialiased">
+
+    <main class="flex-grow flex items-center justify-center p-4 relative w-full mx-auto">
+        
+        <!-- ========================================== -->
+        <!-- VISTA 1: ESCÁNER DE QR                     -->
+        <!-- ========================================== -->
+        <div id="view-scanner" class="w-full max-w-md flex flex-col items-center fade-in">
+            <div class="mb-6 text-center">
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Registro</h1>
+                <p class="text-sm text-gray-500 mt-2">Apunta al código QR del participante</p>
+            </div>
+
+            <div class="w-full bg-white rounded-3xl shadow-xl overflow-hidden p-3 relative">
+                <div id="reader" class="w-full aspect-[3/4] sm:aspect-square relative flex items-center justify-center">
+                    <!-- Decoración tipo "mira" para apuntar -->
+                    <div class="absolute inset-0 z-10 pointer-events-none border-4 border-dashed border-white/50 rounded-2xl m-8"></div>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-6 text-center">Usando cámara trasera preferentemente</p>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VISTA 2: CARGANDO (PROCESANDO)             -->
+        <!-- ========================================== -->
+        <div id="view-loading" class="hidden w-full max-w-md flex-col items-center justify-center text-center fade-in">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center w-full">
+                <div class="relative w-20 h-20 mb-6">
+                    <div class="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Verificando...</h2>
+                <p class="text-gray-500 text-sm">Consultando listado de invitados</p>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VISTA 3: ÉXITO (HTTP 200 & Registrado: true) -->
+        <!-- ========================================== -->
+        <div id="view-success" class="hidden w-full max-w-md flex-col items-center justify-center fade-in">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden w-full">
+                
+                <!-- Cabecera Verde -->
+                <div class="bg-emerald-50 p-6 flex flex-col items-center border-b border-emerald-100 text-center">
+                    <div class="bg-emerald-500 p-4 rounded-full shadow-lg mb-4">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h2 class="text-3xl font-black text-emerald-800 tracking-tight">Acceso Permitido</h2>
+                    <span class="text-emerald-600 font-semibold text-sm mt-1 bg-emerald-100 px-3 py-1 rounded-full">Verificación exitosa</span>
+                </div>
+
+                <!-- Detalles del Participante -->
+                <div class="p-6 space-y-5 bg-white">
+                    <div class="grid grid-cols-2 gap-4 border-b border-gray-100 pb-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nombre</p>
+                            <p id="data-nombre" class="text-lg font-semibold text-gray-800 leading-tight">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Apellidos</p>
+                            <p id="data-apellidos" class="text-lg font-semibold text-gray-800 leading-tight">-</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border-b border-gray-100 pb-4">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Correo Electrónico</p>
+                        <p id="data-correo" class="text-md text-gray-600 break-all font-medium">-</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Edificio</p>
+                            <div class="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-100 text-gray-800 font-semibold text-sm mt-1">
+                                <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                <span id="data-edificio">-</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Mensaje del sistema</p>
+                            <p id="data-mensaje" class="text-sm text-emerald-600 font-medium leading-tight mt-1">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón Volver -->
+                <div class="p-6 pt-2 bg-white">
+                    <button onclick="resetScanner()" class="w-full bg-gray-900 hover:bg-gray-800 active:scale-95 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                        <span>Escanear de nuevo</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VISTA 4: ERROR (HTTP 404 / Registrado: false) -->
+        <!-- ========================================== -->
+        <div id="view-error" class="hidden w-full max-w-md flex-col items-center justify-center fade-in">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden w-full">
+                
+                <!-- Cabecera Roja -->
+                <div class="bg-red-50 p-8 flex flex-col items-center border-b border-red-100 text-center">
+                    <div class="bg-red-500 p-4 rounded-full shadow-lg mb-4">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </div>
+                    <h2 class="text-3xl font-black text-red-800 tracking-tight mb-2">Acceso Denegado</h2>
+                    <div class="bg-red-100 text-red-700 px-4 py-3 rounded-xl mt-2 w-full text-sm font-semibold">
+                        <p id="error-mensaje">El usuario no se encuentra registrado.</p>
+                    </div>
+                </div>
+
+                <!-- Botón Volver -->
+                <div class="p-6 bg-white">
+                    <button onclick="resetScanner()" class="w-full bg-gray-900 hover:bg-gray-800 active:scale-95 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                        <span>Escanear de nuevo</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // =====================================================================
+        // ⚙️ CONFIGURACIÓN PRINCIPAL
+        // =====================================================================
+        
+        // 1. Pon aquí la URL real de tu flujo de Power Automate
+        const POWER_AUTOMATE_URL = ""; 
+
+        // =====================================================================
+
+        // Variables globales
+        let html5QrCode;
+        const configId = "reader";
+        let isProcessing = false;
+        
+        // Referencias del DOM
+        const body = document.getElementById('app-body');
+        const viewScanner = document.getElementById('view-scanner');
+        const viewLoading = document.getElementById('view-loading');
+        const viewSuccess = document.getElementById('view-success');
+        const viewError = document.getElementById('view-error');
+
+        // Inicializar al cargar la página
+        window.addEventListener('load', () => {
+            initScanner();
+        });
+
+        function initScanner() {
+            isProcessing = false;
+            
+            if (html5QrCode) {
+                html5QrCode.clear();
+            }
+
+            html5QrCode = new Html5Qrcode(configId);
+            
+            const config = { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+            
+            // 1. INTENTAR PRIMERO CÁMARA TRASERA (MÓVILES)
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                config,
+                onScanSuccess,
+                (errorMessage) => { /* ignorar errores de frames vacíos */ }
+            ).catch(err => {
+                console.warn("No se pudo iniciar cámara trasera. Intentando cámara frontal/webcam...", err);
+                
+                // 2. SI FALLA (ej. en Laptop), INTENTAR CÁMARA FRONTAL
+                html5QrCode.start(
+                    { facingMode: "user" }, 
+                    config,
+                    onScanSuccess,
+                    (errorMessage) => { /* ignorar errores de frames vacíos */ }
+                ).catch(err2 => {
+                    console.error("Error iniciando ambas cámaras:", err2);
+                    alert("No se pudo acceder a la cámara. Revisa los permisos de tu navegador o asegúrate de estar en una conexión HTTPS segura.");
+                });
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Prevenir lecturas múltiples mientras se procesa un código
+            if (isProcessing) return;
+            isProcessing = true;
+
+            // Mostrar "Cargando..."
+            showView('loading');
+
+            // Detener el escáner visualmente
+            if (html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    sendToPowerAutomate(decodedText);
+                }).catch(err => {
+                    console.error("Error al detener el escáner", err);
+                    sendToPowerAutomate(decodedText); // Continuar de todos modos
+                });
+            }
+        }
+
+        async function sendToPowerAutomate(qrData) {
+            
+            if (!POWER_AUTOMATE_URL || POWER_AUTOMATE_URL.trim() === "") {
+                alert("CONFIGURACIÓN REQUERIDA:\nPor favor, ingresa la URL de tu flujo de Power Automate en el código fuente (variable POWER_AUTOMATE_URL).");
+                resetScanner();
+                return;
+            }
+
+            try {
+                // Enviar la petición POST con el formato exacto {"qrData": "..."}
+                const response = await fetch(POWER_AUTOMATE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ qrData: qrData })
+                });
+
+                // Extraemos el JSON sin importar el estado HTTP (200, 404, etc.)
+                let responseData = {};
+                try {
+                    responseData = await response.json();
+                } catch (e) {
+                    console.warn("La respuesta no contiene un JSON válido", e);
+                }
+
+                // Evaluar la lógica de negocio (basado en 'registrado')
+                if (response.ok && responseData.registrado === true) {
+                    // ÉXITO - 200 y el usuario está registrado
+                    populateSuccessCard(responseData);
+                    showView('success');
+                } else {
+                    // ERROR - Ya sea HTTP 4xx/5xx o que registrado sea false.
+                    // Priorizamos el mensaje que venga en el JSON, sino ponemos uno por defecto.
+                    const errorMessage = responseData.mensaje || "El código no existe en el listado de inscritos o hubo un error en la validación.";
+                    showErrorCard(errorMessage);
+                    showView('error');
+                }
+            } catch (error) {
+                // ERRORES DE RED / CORS
+                console.error("Error de Red / CORS:", error);
+                showErrorCard("Error de conexión. Revisa tu internet o la configuración CORS del webhook.");
+                showView('error'); 
+            }
+        }
+
+        // Rellenar la tarjeta de éxito con los datos del JSON
+        function populateSuccessCard(data) {
+            document.getElementById('data-nombre').innerText = data.nombre || "-";
+            document.getElementById('data-apellidos').innerText = data.apellidos || "-";
+            document.getElementById('data-correo').innerText = data.correo || "-";
+            document.getElementById('data-edificio').innerText = data.edificio || "-";
+            document.getElementById('data-mensaje').innerText = data.mensaje || "Acceso permitido";
+        }
+
+        // Rellenar la tarjeta de error con el mensaje
+        function showErrorCard(mensaje) {
+            const errorElement = document.getElementById('error-mensaje');
+            errorElement.innerText = mensaje;
+        }
+
+        // Controlador de Vistas y Fondos de color
+        function showView(viewName) {
+            // Ocultar todos los contenedores
+            viewScanner.classList.add('hidden');
+            viewLoading.classList.add('hidden');
+            viewSuccess.classList.add('hidden');
+            viewError.classList.add('hidden');
+
+            // Limpiar colores de fondo del body
+            body.classList.remove('bg-gray-100', 'bg-emerald-600', 'bg-red-600');
+
+            if (viewName === 'scanner') {
+                body.classList.add('bg-gray-100');
+                viewScanner.classList.remove('hidden');
+            }
+            if (viewName === 'loading') {
+                body.classList.add('bg-gray-100');
+                viewLoading.classList.remove('hidden');
+            }
+            if (viewName === 'success') {
+                body.classList.add('bg-emerald-600'); // Verde
+                viewSuccess.classList.remove('hidden');
+            }
+            if (viewName === 'error') {
+                body.classList.add('bg-red-600'); // Rojo
+                viewError.classList.remove('hidden');
+            }
+        }
+
+        // Reiniciar flujo y reactivar cámara
+        function resetScanner() {
+            showView('scanner');
+            initScanner();
+        }
+    </script>
+</body>
+</html>
