@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="env/utilities.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
@@ -235,8 +236,8 @@
         // ⚙️ CONFIGURACIÓN PRINCIPAL
         // =====================================================================
         
-        // 1. Pon aquí la URL real de tu flujo de Power Automate
-        const POWER_AUTOMATE_URL = "";  //TODO: Ingresa la URL de tu flujo de Power Automate aquí
+        // 1. La URL del flujo se guarda en env/utilities.js
+        const POWER_AUTOMATE_URL = window.POWER_AUTOMATE_URL || "";
 
         // =====================================================================
 
