@@ -7,8 +7,30 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --font-heading: "Futura Next Bold", "Montserrat", "Segoe UI", sans-serif;
+            --font-body: "Open Sans", "Segoe UI", sans-serif;
+            --font-ui: "Montserrat", "Segoe UI", sans-serif;
+        }
+
+        html, body {
+            font-family: var(--font-body);
+        }
+
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: var(--font-heading);
+            letter-spacing: 0.02em;
+        }
+
+        .font-ui, button, label, .tag, .meta-label {
+            font-family: var(--font-ui);
+        }
+
         #reader {
             border: none !important;
             border-radius: 1rem;
@@ -26,7 +48,7 @@
             display: none !important;
         }
         #reader button {
-            background-color: #3b82f6;
+            background-color: #007979;
             color: white;
             font-weight: 500;
             padding: 10px 20px;
@@ -37,35 +59,62 @@
             transition: background-color 0.2s;
         }
         #reader button:hover {
-            background-color: #2563eb;
+            background-color: #005f5f;
+        }
+
+        body {
+            background: #007979 !important;
+        }
+
+        .app-shell {
+            background: #007979;
+            transition: background-color 0.35s ease;
+        }
+
+        .panel-surface {
+            background: #ffffff;
+            border-radius: 0;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.35s ease;
         }
         
-        .fade-in { animation: fadeIn 0.3s ease-in forwards; }
+        .fade-in { animation: fadeIn 0.35s ease-in forwards; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body id="app-body" class="bg-gray-100 flex flex-col min-h-screen transition-colors duration-500 ease-in-out font-sans text-gray-800 antialiased">
+<body id="app-body" class="app-shell flex flex-col min-h-screen transition-colors duration-500 ease-in-out font-sans text-gray-800 antialiased relative" style="background:#007979;">
+    <div class="w-full" style="background:#007979; padding: 12px 12px 10px;">
+        <div class="relative w-full max-w-6xl mx-auto h-16 sm:h-20">
+            <img src="https://forosostenibilidadgmp.com/wp-content/uploads/2024/10/logo-horizontal-blanco.png" alt="Logo GMP" class="absolute left-0 top-1/2 -translate-y-1/2 w-28 sm:w-44 object-contain rounded-none" />
+            <img src="https://forosostenibilidadgmp.com/wp-content/uploads/2026/09/II-FORO.png" alt="II Foro" class="absolute right-0 top-1/2 -translate-y-1/2 w-36 sm:w-52 object-contain rounded-none" />
+        </div>
+    </div>
 
-    <main class="flex-grow flex items-center justify-center p-4 relative w-full mx-auto">
+    <script>
+        if (sessionStorage.getItem('accessGranted') !== 'true') {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <main class="panel-surface flex-grow flex items-center justify-center p-3 pt-4 sm:p-4 sm:pt-6 relative w-full mx-auto mt-0" style="min-height: calc(100vh - 96px); border-radius: 0;">
         
         <!-- ========================================== -->
         <!-- VISTA 1: ESCÁNER DE QR                     -->
         <!-- ========================================== -->
         <div id="view-scanner" class="w-full max-w-md flex flex-col items-center fade-in">
             <div class="mb-6 text-center">
-                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Registro</h1>
-                <p class="text-sm text-gray-500 mt-2">Apunta al código QR del participante</p>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight font-heading">Registro</h1>
+                <p class="text-sm text-gray-500 mt-2 font-ui">Apunta al código QR del participante</p>
             </div>
 
-            <div class="w-full bg-white rounded-3xl shadow-xl overflow-hidden p-3 relative">
-                <div id="reader" class="w-full aspect-[3/4] sm:aspect-square relative flex items-center justify-center">
-                    <div class="absolute inset-0 z-10 pointer-events-none border-4 border-dashed border-white/50 rounded-2xl m-8"></div>
+            <div class="w-full bg-white rounded-none shadow-xl overflow-hidden p-3 relative">
+                <div id="reader" class="w-full aspect-[3/4] sm:aspect-square relative flex items-center justify-center rounded-none">
+                    <div class="absolute inset-0 z-10 pointer-events-none border-4 border-dashed border-white/50 rounded-none m-8"></div>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-6 text-center">Usando cámara trasera preferentemente</p>
         </div>
 
         <!-- ========================================== -->
@@ -77,8 +126,8 @@
                     <div class="absolute inset-0 rounded-full border-4 border-gray-100"></div>
                     <div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
                 </div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Verificando...</h2>
-                <p class="text-gray-500 text-sm">Consultando listado de invitados</p>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2 font-heading">Verificando...</h2>
+                <p class="text-gray-500 text-sm font-ui">Consultando listado de invitados</p>
             </div>
         </div>
 
@@ -92,26 +141,26 @@
                     <div class="bg-emerald-500 p-4 rounded-full shadow-lg mb-4">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                     </div>
-                    <h2 class="text-3xl font-black text-emerald-800 tracking-tight">Acceso Permitido</h2>
-                    <span class="text-emerald-600 font-semibold text-sm mt-1 bg-emerald-100 px-3 py-1 rounded-full">Verificación exitosa</span>
+                    <h2 class="text-3xl font-black text-emerald-800 tracking-tight font-heading">Acceso Permitido</h2>
+                    <span class="text-emerald-600 font-semibold text-sm mt-1 bg-emerald-100 px-3 py-1 rounded-full font-ui">Verificación exitosa</span>
                 </div>
 
                 <div class="p-6 space-y-5 bg-white">
                     <!-- Fila 1: Nombre y Apellidos (Ancho completo) -->
                     <div class="border-b border-gray-100 pb-4">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nombre y Apellidos</p>
-                        <p id="data-nombre-apellidos" class="text-xl font-semibold text-gray-800 leading-tight">-</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 font-ui">Nombre y Apellidos</p>
+                        <p id="data-nombre-apellidos" class="text-xl font-semibold text-gray-800 leading-tight font-heading">-</p>
                     </div>
                     
                     <!-- Fila 2: Empresa y Email -->
                     <div class="grid grid-cols-2 gap-4 border-b border-gray-100 pb-4">
                         <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Empresa</p>
-                            <p id="data-empresa" class="text-md text-gray-800 font-medium break-words">-</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 font-ui">Empresa</p>
+                            <p id="data-empresa" class="text-md text-gray-800 font-medium break-words font-ui">-</p>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email corporativo</p>
-                            <p id="data-correo" class="text-sm text-gray-600 break-all font-medium">-</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 font-ui">Email corporativo</p>
+                            <p id="data-correo" class="text-sm text-gray-600 break-all font-medium font-ui">-</p>
                         </div>
                     </div>
                     
@@ -119,22 +168,22 @@
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Wrapper del Edificio: se oculta si no hay valor -->
                         <div id="wrapper-edificio">
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Edificio</p>
-                            <div class="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-100 text-gray-800 font-semibold text-sm mt-1">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 font-ui">Edificio</p>
+                            <div class="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-100 text-gray-800 font-semibold text-sm mt-1 font-ui">
                                 <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                                 <span id="data-edificio">-</span>
                             </div>
                         </div>
                         
                         <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Mensaje del sistema</p>
-                            <p id="data-mensaje" class="text-sm text-emerald-600 font-medium leading-tight mt-1">-</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 font-ui">Mensaje del sistema</p>
+                            <p id="data-mensaje" class="text-sm text-emerald-600 font-medium leading-tight mt-1 font-ui">-</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="p-6 pt-2 bg-white">
-                    <button onclick="resetScanner()" class="w-full bg-gray-900 hover:bg-gray-800 active:scale-95 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md">
+                    <button onclick="resetScanner()" class="w-full bg-[#007979] hover:bg-[#005f5f] active:scale-95 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                         <span>Escanear de nuevo</span>
                     </button>
@@ -152,14 +201,14 @@
                     <div class="bg-red-500 p-4 rounded-full shadow-lg mb-4">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </div>
-                    <h2 class="text-3xl font-black text-red-800 tracking-tight mb-2">Acceso Denegado</h2>
-                    <div class="bg-red-100 text-red-700 px-4 py-3 rounded-xl mt-2 w-full text-sm font-semibold">
+                    <h2 class="text-3xl font-black text-red-800 tracking-tight mb-2 font-heading">Acceso Denegado</h2>
+                    <div class="bg-red-100 text-red-700 px-4 py-3 rounded-xl mt-2 w-full text-sm font-semibold font-ui">
                         <p id="error-mensaje">El usuario no se encuentra registrado.</p>
                     </div>
                 </div>
 
                 <div class="p-6 bg-white">
-                    <button onclick="resetScanner()" class="w-full bg-gray-900 hover:bg-gray-800 active:scale-95 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md">
+                    <button onclick="resetScanner()" class="w-full bg-[#007979] hover:bg-[#005f5f] active:scale-95 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                         <span>Escanear de nuevo</span>
                     </button>
@@ -175,7 +224,7 @@
         // =====================================================================
         
         // 1. Pon aquí la URL real de tu flujo de Power Automate
-        const POWER_AUTOMATE_URL = ""; 
+        const POWER_AUTOMATE_URL = "";  //TODO: Ingresa la URL de tu flujo de Power Automate aquí
 
         // =====================================================================
 
@@ -367,19 +416,19 @@
             body.classList.remove('bg-gray-100', 'bg-emerald-600', 'bg-red-600');
 
             if (viewName === 'scanner') {
-                body.classList.add('bg-gray-100');
+                body.style.background = '#007979';
                 viewScanner.classList.remove('hidden');
             }
             if (viewName === 'loading') {
-                body.classList.add('bg-gray-100');
+                body.style.background = '#007979';
                 viewLoading.classList.remove('hidden');
             }
             if (viewName === 'success') {
-                body.classList.add('bg-emerald-600'); 
+                body.style.background = '#007979';
                 viewSuccess.classList.remove('hidden');
             }
             if (viewName === 'error') {
-                body.classList.add('bg-red-600'); 
+                body.style.background = '#007979';
                 viewError.classList.remove('hidden');
             }
         }
