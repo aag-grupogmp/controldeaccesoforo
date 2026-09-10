@@ -19,6 +19,9 @@
         }
 
         html, body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
             font-family: var(--font-body);
         }
 
@@ -29,6 +32,10 @@
 
         .font-ui, button, label, .tag, .meta-label {
             font-family: var(--font-ui);
+        }
+
+        html, body {
+            overscroll-behavior: none;
         }
 
         #reader {
@@ -64,10 +71,13 @@
 
         body {
             background: #007979 !important;
+            overflow: hidden;
         }
 
         .app-shell {
             background: #007979;
+            height: 100vh;
+            overflow: hidden;
             transition: background-color 0.35s ease;
         }
 
@@ -75,6 +85,8 @@
             background: #ffffff;
             border-radius: 0;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            height: calc(100vh - 86px);
+            overflow: hidden;
             transition: all 0.35s ease;
         }
         
@@ -99,7 +111,7 @@
         }
     </script>
 
-    <main class="panel-surface flex-grow flex items-center justify-center p-3 pt-4 sm:p-4 sm:pt-6 relative w-full mx-auto mt-0" style="min-height: calc(100vh - 96px); border-radius: 0;">
+    <main class="panel-surface flex-grow flex items-center justify-center p-3 pt-4 sm:p-4 sm:pt-6 relative w-full mx-auto mt-0 overflow-hidden" style="border-radius: 0; min-height: calc(100vh - 86px);">
         
         <!-- ========================================== -->
         <!-- VISTA 1: ESCÁNER DE QR                     -->
